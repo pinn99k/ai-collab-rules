@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+- MIT 라이선스 추가, 출처 표기 보강
+- `.gitattributes`로 훅 파일 줄바꿈을 LF로 고정 (Windows clone에서 CRLF로 바뀌는 문제 예방)
+
 ## v0.1 — 2026-11-06
 - 규칙 3개: coding-discipline, change-summary, quality-alarms
 - 스킬 3개: one-way-door, explain-back, weekly-audit

@@ -10,6 +10,7 @@ AI로 빠르게 구현하면서도, 결과 코드를 직접 설명하고 책임�
 5. 팀 프로젝트에 적용
 6. 업데이트
 7. 출처
+8. 라이선스
 
 ## 1. 무엇을 하나
 
@@ -91,6 +92,10 @@ Claude Code가 아닌 도구(AGENTS.md를 읽는 도구 등)를 함께 쓰면, �
 
 ## 7. 출처
 
-- 코딩 규율은 Karpathy 코딩 가이드라인(multica-ai/andrej-karpathy-skills, MIT)을 각색했습니다.
+- 코딩 규율은 Karpathy 코딩 가이드라인([multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills), 작성자 forrestchang)을 각색했습니다. 원본은 README와 plugin.json에 MIT로 표기되어 있습니다.
 - 한쪽 문 / 양쪽 문은 제프 베이조스의 2015년 주주 서한(Type 1 / Type 2 결정)에서 가져왔습니다.
 - 장황성·침식도 지표는 SlopCodeBench 소개 글을 참고했습니다.
+
+## 8. 라이선스
+
+[MIT](LICENSE). 위 출처의 내용은 각 원저작자의 권리와 조건을 따릅니다.
