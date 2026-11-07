@@ -1,0 +1,10 @@
+#!/bin/sh
+# ai-collab 품질 경보. 경고만 하고 커밋을 막지 않는다.
+DIR=$(dirname "$0")
+for p in python3 python py; do
+  if command -v "$p" >/dev/null 2>&1 && "$p" -c "" >/dev/null 2>&1; then
+    "$p" "$DIR/quality_check.py"
+    break
+  fi
+done
+exit 0
