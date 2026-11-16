@@ -1,0 +1,10 @@
+#!/bin/sh
+# main으로 가는 push를 막는다. GitHub 브랜치 보호를 못 쓰는 동안의 로컬 대체.
+# 입력 한 줄: <로컬 ref> <로컬 sha> <원격 ref> <원격 sha>
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [ "$remote_ref" = "refs/heads/main" ]; then
+    echo "[ai-collab] main에 직접 push할 수 없습니다. 브랜치를 push하고 PR을 여세요." >&2
+    exit 1
+  fi
+done
+exit 0

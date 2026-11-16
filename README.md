@@ -19,17 +19,19 @@ AI가 결정하고 AI가 기록하면, 사람은 이미 내려진 결정의 사�
 - **한쪽 문**: 되돌리기 비싼 결정(자료구조, 스키마, API, 모듈 경계, 외부 의존성, 새 패턴)은 사람이 내립니다.
 - **양쪽 문**: 나머지는 AI가 결정하고 기록만 남깁니다.
 
-검사는 세 겹입니다. 규칙으로 예방하고, 도구로 이상 징후를 잡고, 사람이 고른 곳만 직접 설명해 봅니다.
+설계는 질문 지도로 시작합니다. AI가 설계를 끝낸 뒤 묻는 대신, 명세에서 생기는 질문을 먼저 순서대로 내고 사람이 하나씩 결정합니다. 그래야 왜 그렇게 정해졌는지 사람이 압니다.
+
+검사는 세 겹입니다. 규칙으로 예방하고, 도구로 이상 징후를 잡고, 사람이 넘긴 결정과 AI가 정한 원리만 예측 질문으로 확인합니다.
 설계 배경과 결정 이유는 `docs/design-log.md`에 있습니다.
 
 ## 2. 구성
 
 ```
 ai-collab-rules/
-├── rules/        항상 적용되는 규칙 3개
+├── rules/        항상 적용되는 규칙 4개
 ├── skills/       필요할 때 불러 쓰는 절차 3개
-├── templates/    프로젝트에 복사하는 CLAUDE.md, ARCHITECTURE.md
-├── hooks/        커밋 직전 품질 경보 (pre-commit, quality_check.py)
+├── templates/    프로젝트에 복사하는 CLAUDE.md, ARCHITECTURE.md, 질문 지도 틀, 설계 메모 틀
+├── hooks/        커밋 직전 품질 경보 (pre-commit, quality_check.py), main push 차단 (pre-push)
 └── docs/         설계 기록
 ```
 
@@ -38,10 +40,14 @@ ai-collab-rules/
 | 규칙 | `ai-collab-coding-discipline.md` | 최소 코드, 재사용 우선, 같은 일은 한 방식으로 |
 | 규칙 | `ai-collab-change-summary.md` | 구현 전 예상 1줄, 커밋 요약 5줄 |
 | 규칙 | `ai-collab-quality-alarms.md` | 복잡도·중복 경보 기준과 대응 |
-| 스킬 | `one-way-door` | 중요한 결정 앞에서 선택지 제시, 결정 대기, ADR 초안 |
-| 스킬 | `explain-back` | 사용자가 코드를 2줄로 설명하고 피드백 받기 |
-| 스킬 | `weekly-audit` | 주 1회 품질 추세 점검 |
-| 훅 | `hooks/pre-commit` | 커밋마다 새 복잡 함수·새 중복·예상 초과 LOC 경고 (커밋은 막지 않음) |
+| 규칙 | `ai-collab-design-briefing.md` | 설계 전 질문 지도, 결정 등급(묻기·알려주기·맡기기), 5줄 결정 카드, 짧은 브리핑 |
+| 템플릿 | `templates/question-map.md` | 질문 지도 틀. 사람이 작업 중에 읽는 유일한 설계 문서 |
+| 템플릿 | `templates/design-memo.md` | 설계 메모 틀. 기록용이며 질문 지도의 답을 옮겨 쓴다 |
+| 스킬 | `one-way-door` | 중요한 결정 앞에서 결정 카드 제시, 결정 대기, 위임 표시, ADR 기록 |
+| 스킬 | `explain-back` | 예측 질문 1개로 이해 확인 (위임한 결정, AI가 정한 원리, 경보 diff) |
+| 스킬 | `phase-audit` | 단계가 끝날 때 품질 추세 점검 |
+| 훅 | `hooks/pre-commit` | 커밋마다 새 복잡 함수·새 중복·예상 초과 LOC 경고, explain-back 대기 수 표시 (커밋은 막지 않음) |
+| 훅 | `hooks/pre-push` | main으로 가는 push 차단. 브랜치 보호를 못 쓸 때의 로컬 대체 (선택) |
 
 ## 3. 설치
 
@@ -70,7 +76,8 @@ cp -r skills/* ~/.claude/skills/
    - `learning`: 배우는 단계. 핵심 알고리즘, 에러 처리, 테스트 전략도 사람이 결정합니다.
    - `ship`: 출시 단계. 한쪽 문 기본 목록만 사람이 결정합니다.
 3. ARCHITECTURE.md의 모듈 맵과 단일 방식 규칙을 채웁니다. 처음에는 비워 두고, 첫 한쪽 문 결정 때부터 채워도 됩니다.
-4. 커밋 훅을 설치합니다. 프로젝트 저장소마다 한 번 합니다.
+4. 설계 단계마다 `templates/question-map.md`를 `docs/question-maps/`에 복사해 질문 지도를 만듭니다. 결정이 끝나면 그 답을 설계 메모와 ADR에 옮깁니다.
+5. 커밋 훅을 설치합니다. 프로젝트 저장소마다 한 번 합니다.
    ```bash
    cp <ai-collab-rules>/hooks/pre-commit <ai-collab-rules>/hooks/quality_check.py .git/hooks/
    chmod +x .git/hooks/pre-commit   # macOS/Linux
@@ -78,6 +85,9 @@ cp -r skills/* ~/.claude/skills/
    ```
    중복 검사는 Node.js가 있으면 `npx jscpd`로 자동 실행됩니다. 도구가 없으면 해당 검사만 건너뛰고 안내 한 줄을 띄웁니다.
    경보 기록은 `.git/ai-alarms.log`에 쌓입니다.
+   main 직접 push를 막으려면 `hooks/pre-push`도 `.git/hooks/`에 복사합니다.
+
+전역 설치 대신 저장소 안에 이 폴더를 `ai-collab-rules/`로 통째로 두고, 프로젝트 CLAUDE.md에서 `@ai-collab-rules/rules/파일명.md`로 불러와도 됩니다. 커밋 훅은 이 폴더의 코드를 검사에서 뺍니다.
 
 ## 5. 팀 프로젝트에 적용
 
@@ -87,6 +97,8 @@ Claude Code가 아닌 도구(AGENTS.md를 읽는 도구 등)를 함께 쓰면, �
 ## 6. 업데이트
 
 이 저장소가 원본입니다. 규칙이나 스킬을 고친 뒤에는 3번 설치 명령을 다시 실행해 `~/.claude/`의 사본을 갱신합니다.
+claude.ai 계정에 올려 둔 스킬은 저장소를 고쳐도 바뀌지 않습니다. 스킬 폴더를 다시 올려 교체합니다.
+프로젝트 안에 둔 사본은 그 프로젝트에서 고쳐 써도 됩니다. 프로젝트가 끝나면 바뀐 부분을 이 저장소로 가져옵니다.
 
 변경 내역은 `CHANGELOG.md`에 남기고, 버전은 git 태그로 찍습니다.
 

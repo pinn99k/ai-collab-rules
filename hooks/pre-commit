@@ -1,6 +1,8 @@
 #!/bin/sh
 # ai-collab 품질 경보. 경고만 하고 커밋을 막지 않는다.
 DIR=$(dirname "$0")
+# Windows에서 파이프 출력이 cp949가 되어 한글이 깨지는 것을 막는다
+export PYTHONIOENCODING=utf-8
 for p in python3 python py; do
   if command -v "$p" >/dev/null 2>&1 && "$p" -c "" >/dev/null 2>&1; then
     "$p" "$DIR/quality_check.py"
