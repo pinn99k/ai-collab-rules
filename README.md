@@ -19,7 +19,7 @@ AI가 결정하고 AI가 기록하면, 사람은 이미 내려진 결정의 사�
 - **한쪽 문**: 되돌리기 비싼 결정(자료구조, 스키마, API, 모듈 경계, 외부 의존성, 새 패턴)은 사람이 내립니다.
 - **양쪽 문**: 나머지는 AI가 결정하고 기록만 남깁니다.
 
-설계는 질문 지도로 시작합니다. AI가 설계를 끝낸 뒤 묻는 대신, 명세에서 생기는 질문을 먼저 순서대로 내고 사람이 하나씩 결정합니다. 그래야 왜 그렇게 정해졌는지 사람이 압니다.
+설계는 질문 지도와 흐름 지도로 시작합니다. AI가 설계를 끝낸 뒤 묻는 대신, 명세에서 생기는 질문을 먼저 순서대로 내고 사람이 하나씩 결정합니다. 그래야 왜 그렇게 정해졌는지 사람이 압니다. 흐름 지도는 요청 하나가 코드를 끝에서 끝까지 지나가는 길을 한 장에 보여 줍니다. 사람이 묻기 전에 먼저 보여 줍니다.
 
 검사는 세 겹입니다. 규칙으로 예방하고, 도구로 이상 징후를 잡고, 사람이 넘긴 결정과 AI가 정한 원리만 예측 질문으로 확인합니다.
 설계 배경과 결정 이유는 `docs/design-log.md`에 있습니다.
@@ -30,7 +30,7 @@ AI가 결정하고 AI가 기록하면, 사람은 이미 내려진 결정의 사�
 ai-collab-rules/
 ├── rules/        항상 적용되는 규칙 4개
 ├── skills/       필요할 때 불러 쓰는 절차 3개
-├── templates/    프로젝트에 복사하는 CLAUDE.md, ARCHITECTURE.md, 질문 지도 틀, 설계 메모 틀
+├── templates/    프로젝트에 복사하는 CLAUDE.md, ARCHITECTURE.md, 질문 지도 틀, 흐름 지도 틀, 설계 메모 틀
 ├── hooks/        커밋 직전 품질 경보 (pre-commit, quality_check.py), main push 차단 (pre-push)
 └── docs/         설계 기록
 ```
@@ -40,8 +40,9 @@ ai-collab-rules/
 | 규칙 | `ai-collab-coding-discipline.md` | 최소 코드, 재사용 우선, 같은 일은 한 방식으로 |
 | 규칙 | `ai-collab-change-summary.md` | 구현 전 예상 1줄, 커밋 요약 5줄 |
 | 규칙 | `ai-collab-quality-alarms.md` | 복잡도·중복 경보 기준과 대응 |
-| 규칙 | `ai-collab-design-briefing.md` | 설계 전 질문 지도, 결정 등급(묻기·알려주기·맡기기), 5줄 결정 카드, 짧은 브리핑 |
-| 템플릿 | `templates/question-map.md` | 질문 지도 틀. 사람이 작업 중에 읽는 유일한 설계 문서 |
+| 규칙 | `ai-collab-design-briefing.md` | 설계 전 질문 지도와 흐름 지도, 결정 등급(묻기·알려주기·맡기기), 5줄 결정 카드, 다른 도구에서 설계할 때의 인수인계, 짧은 브리핑 |
+| 템플릿 | `templates/question-map.md` | 질문 지도 틀. 왜 그렇게 정했나 (사람이 작업 중에 읽는 문서 1) |
+| 템플릿 | `templates/flow-map.md` | 흐름 지도 틀. 코드가 실제로 어떻게 돌아가나 (사람이 작업 중에 읽는 문서 2) |
 | 템플릿 | `templates/design-memo.md` | 설계 메모 틀. 기록용이며 질문 지도의 답을 옮겨 쓴다 |
 | 스킬 | `one-way-door` | 중요한 결정 앞에서 결정 카드 제시, 결정 대기, 위임 표시, ADR 기록 |
 | 스킬 | `explain-back` | 예측 질문 1개로 이해 확인 (위임한 결정, AI가 정한 원리, 경보 diff) |
@@ -76,7 +77,8 @@ cp -r skills/* ~/.claude/skills/
    - `learning`: 배우는 단계. 핵심 알고리즘, 에러 처리, 테스트 전략도 사람이 결정합니다.
    - `ship`: 출시 단계. 한쪽 문 기본 목록만 사람이 결정합니다.
 3. ARCHITECTURE.md의 모듈 맵과 단일 방식 규칙을 채웁니다. 처음에는 비워 두고, 첫 한쪽 문 결정 때부터 채워도 됩니다.
-4. 설계 단계마다 `templates/question-map.md`를 `docs/question-maps/`에 복사해 질문 지도를 만듭니다. 결정이 끝나면 그 답을 설계 메모와 ADR에 옮깁니다.
+4. 설계 단계마다 `templates/question-map.md`를 `docs/question-maps/`에 복사해 질문 지도를 만들고, 프로젝트에 하나 `templates/flow-map.md`를 `docs/flow-map.md`로 복사해 흐름 지도를 만듭니다. 결정이 끝나면 그 답을 설계 메모와 ADR에 옮깁니다. 학습 가이드는 프로젝트가 끝날 때 한 번 만듭니다.
+   설계를 채팅이나 Cowork에서 하고 구현을 Claude Code에서 한다면, 설계 쪽에 `rules/ai-collab-design-briefing.md`를 직접 읽게 하세요. "설계를 다른 곳에서 할 때" 절이 두 쪽이 주고받을 것을 정합니다.
 5. 커밋 훅을 설치합니다. 프로젝트 저장소마다 한 번 합니다.
    ```bash
    cp <ai-collab-rules>/hooks/pre-commit <ai-collab-rules>/hooks/quality_check.py .git/hooks/
