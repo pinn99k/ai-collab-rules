@@ -28,7 +28,7 @@ AI가 결정하고 AI가 기록하면, 사람은 이미 내려진 결정의 사�
 
 ```
 ai-collab-rules/
-├── rules/        항상 적용되는 규칙 4개
+├── rules/        항상 적용되는 규칙 5개
 ├── skills/       필요할 때 불러 쓰는 절차 3개
 ├── templates/    프로젝트에 복사하는 CLAUDE.md, ARCHITECTURE.md, 질문 지도 틀, 흐름 지도 틀, 설계 메모 틀
 ├── hooks/        커밋 직전 품질 경보 (pre-commit, quality_check.py), main push 차단 (pre-push)
@@ -40,12 +40,13 @@ ai-collab-rules/
 | 규칙 | `ai-collab-coding-discipline.md` | 최소 코드, 재사용 우선, 같은 일은 한 방식으로 |
 | 규칙 | `ai-collab-change-summary.md` | 구현 전 예상 1줄, 커밋 요약 5줄 |
 | 규칙 | `ai-collab-quality-alarms.md` | 복잡도·중복 경보 기준과 대응 |
-| 규칙 | `ai-collab-design-briefing.md` | 설계 전 질문 지도와 흐름 지도, 결정 등급(묻기·알려주기·맡기기), 5줄 결정 카드, 다른 도구에서 설계할 때의 인수인계, 짧은 브리핑 |
+| 규칙 | `ai-collab-design-briefing.md` | 설계 전 질문 지도와 흐름 지도, 결정 등급(묻기·알려주기·맡기기), 5줄 결정 카드, 다른 도구에서 설계할 때의 인수인계, 문서 쓰기 전 세 칸, 짧은 브리핑 |
+| 규칙 | `ai-collab-repo-setup.md` | 세션 시작 때 CLAUDE.md · 커밋 훅 확인, 새 저장소는 첫 커밋 전에 설치 |
 | 템플릿 | `templates/question-map.md` | 질문 지도 틀. 왜 그렇게 정했나 (사람이 작업 중에 읽는 문서 1) |
 | 템플릿 | `templates/flow-map.md` | 흐름 지도 틀. 코드가 실제로 어떻게 돌아가나 (사람이 작업 중에 읽는 문서 2) |
 | 템플릿 | `templates/design-memo.md` | 설계 메모 틀. 기록용이며 질문 지도의 답을 옮겨 쓴다 |
 | 스킬 | `one-way-door` | 중요한 결정 앞에서 결정 카드 제시, 결정 대기, 위임 표시, ADR 기록 |
-| 스킬 | `explain-back` | 예측 질문 1개로 이해 확인 (위임한 결정, AI가 정한 원리, 경보 diff) |
+| 스킬 | `explain-back` | 예측 질문 1개로 이해 확인 (위임한 결정, AI가 정한 원리, 경보 diff). 발표 · PR · 회고 때 꺼낸다 |
 | 스킬 | `phase-audit` | 단계가 끝날 때 품질 추세 점검 |
 | 훅 | `hooks/pre-commit` | 커밋마다 새 복잡 함수·새 중복·예상 초과 LOC 경고, explain-back 대기 수 표시 (커밋은 막지 않음) |
 | 훅 | `hooks/pre-push` | main으로 가는 push 차단. 브랜치 보호를 못 쓸 때의 로컬 대체 (선택) |
@@ -89,7 +90,7 @@ cp -r skills/* ~/.claude/skills/
    경보 기록은 `.git/ai-alarms.log`에 쌓입니다.
    main 직접 push를 막으려면 `hooks/pre-push`도 `.git/hooks/`에 복사합니다.
 
-전역 설치 대신 저장소 안에 이 폴더를 `ai-collab-rules/`로 통째로 두고, 프로젝트 CLAUDE.md에서 `@ai-collab-rules/rules/파일명.md`로 불러와도 됩니다. 커밋 훅은 이 폴더의 코드를 검사에서 뺍니다.
+전역 설치 대신 저장소 안에 이 폴더를 `ai-collab-rules/`로 통째로 두고, 프로젝트 CLAUDE.md에서 `@ai-collab-rules/rules/파일명.md`로 불러와도 됩니다. 커밋 훅은 이 폴더의 코드를 검사에서 뺍니다. 이 방식에서는 `ai-collab-repo-setup.md`가 그 저장소 밖에서 돌지 않으므로, 새로 만드는 저장소는 직접 챙겨야 합니다.
 
 ## 5. 팀 프로젝트에 적용
 
