@@ -1,10 +1,11 @@
 """ai-collab 품질 경보 (pre-commit).
 
-이번 커밋에서 새로 생긴 것만 본다. 경고만 하고 커밋은 막지 않는다.
+이번 커밋에서 새로 생긴 것만 본다. 품질 경보는 경고만 하고 커밋을 막지 않는다.
 - 순환 복잡도(CC) 10 초과 함수가 새로 생기거나 10을 넘게 된 경우 (lizard)
 - 변경 파일에 새 중복 블록이 생긴 경우 (jscpd). 양쪽이 모두 테스트 파일이면 세지 않는다
 - 소스 줄 수 증가가 사전 예상의 2배를 넘은 경우 (.git/ai-estimate에 적힌 숫자, 비교 후 지운다)
 경보와 안내는 최대 3줄. docs/explain-log.md에 대기가 있으면 대기 수 한 줄을 더한다.
+막는 것은 하나뿐이다: explain-back 대기가 한도(AI_COLLAB_PENDING_LIMIT, 기본 1)를 넘으면 exit 1.
 """
 import csv, io, json, os, shutil, subprocess, sys, tarfile, tempfile
 from datetime import datetime
@@ -15,6 +16,13 @@ LOC_FACTOR = 2
 TOOL_DIR = "ai-collab-rules/"  # 협업 도구 자체 코드는 검사하지 않는다
 TEST_MARKS = (".test.", ".spec.", "_test.", "/test/", "/tests/", "/__tests__/")
 PENDING = "대기"
+
+
+def pending_limit():
+    try:
+        return int(os.environ.get("AI_COLLAB_PENDING_LIMIT", "1"))
+    except ValueError:
+        return 1
 
 
 def git(*args, binary=False):
@@ -166,7 +174,6 @@ def check(files):
 
     lines = [f"[ai-collab 경보] {a}" for a in alarms]
     if alarms:
-        lines[-1] += " → explain-back 대상"
         stamp = datetime.now().strftime("%Y-%m-%d %H:%M")
         branch = git("symbolic-ref", "--short", "-q", "HEAD").strip() or "?"
         log = os.path.join(git("rev-parse", "--git-dir").strip(), "ai-alarms.log")
@@ -178,16 +185,26 @@ def check(files):
 
 def main():
     files = staged_code_files()
-    lines = check(files) if files else []
-    waiting = pending_count()
+    try:
+        lines = check(files) if files else []
+    except Exception as e:  # 경보 스크립트 오류로 커밋을 막지 않는다
+        lines = [f"[ai-collab] 품질 검사 건너뜀: {e}"]
+    waiting, limit = pending_count(), pending_limit()
     if waiting:
         lines.append(f"[ai-collab] explain-back {PENDING} {waiting}건")
+    blocked = waiting > limit
+    if blocked:
+        lines.append(f"[ai-collab] 대기가 한도 {limit}건을 넘어 커밋을 막았습니다. "
+                     f"1건을 예측 질문으로 닫거나, 이유 한 줄과 함께 건너뜀으로 적으세요.")
     if lines:
         print("\n".join(lines))
+    return 1 if blocked else 0
 
 
 if __name__ == "__main__":
     try:
-        main()
-    except Exception as e:  # 경보 스크립트 오류로 커밋을 막지 않는다
+        code = main()
+    except Exception as e:  # 대기 수를 못 읽는 오류로는 커밋을 막지 않는다
         print(f"[ai-collab] 검사 건너뜀: {e}")
+        code = 0
+    sys.exit(code)

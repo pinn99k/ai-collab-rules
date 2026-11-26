@@ -40,15 +40,15 @@ ai-collab-rules/
 | 규칙 | `ai-collab-coding-discipline.md` | 최소 코드, 재사용 우선, 같은 일은 한 방식으로 |
 | 규칙 | `ai-collab-change-summary.md` | 구현 전 예상 1줄, 커밋 요약 5줄 |
 | 규칙 | `ai-collab-quality-alarms.md` | 복잡도·중복 경보 기준과 대응 |
-| 규칙 | `ai-collab-design-briefing.md` | 설계 전 질문 지도와 흐름 지도, 결정 등급(묻기·알려주기·맡기기), 5줄 결정 카드, 다른 도구에서 설계할 때의 인수인계, 문서 쓰기 전 세 칸, 짧은 브리핑 |
+| 규칙 | `ai-collab-design-briefing.md` | 개발 범위와 단계, 흐름 지도 먼저 → 질문 지도, 결정 등급(묻기는 아키텍처급만 단계당 0~2개), 렌즈 2개가 붙은 결정 카드, 다른 도구에서 설계할 때의 인수인계, 문서 쓰기 전 세 칸, 짧은 브리핑 |
 | 규칙 | `ai-collab-repo-setup.md` | 세션 시작 때 CLAUDE.md · 커밋 훅 확인, 새 저장소는 첫 커밋 전에 설치 |
 | 템플릿 | `templates/question-map.md` | 질문 지도 틀. 왜 그렇게 정했나 (사람이 작업 중에 읽는 문서 1) |
 | 템플릿 | `templates/flow-map.md` | 흐름 지도 틀. 코드가 실제로 어떻게 돌아가나 (사람이 작업 중에 읽는 문서 2) |
 | 템플릿 | `templates/design-memo.md` | 설계 메모 틀. 기록용이며 질문 지도의 답을 옮겨 쓴다 |
 | 스킬 | `one-way-door` | 중요한 결정 앞에서 결정 카드 제시, 결정 대기, 위임 표시, ADR 기록 |
-| 스킬 | `explain-back` | 예측 질문 1개로 이해 확인 (위임한 결정, AI가 정한 원리, 경보 diff). 발표 · PR · 회고 때 꺼낸다 |
-| 스킬 | `phase-audit` | 단계가 끝날 때 품질 추세 점검 |
-| 훅 | `hooks/pre-commit` | 커밋마다 새 복잡 함수·새 중복·예상 초과 LOC 경고, explain-back 대기 수 표시 (커밋은 막지 않음) |
+| 스킬 | `explain-back` | 단계마다 1건, 동작을 예측하고 실행으로 확인. 코드를 줄 단위로 읽지 않는다 |
+| 스킬 | `phase-audit` | 단계가 끝날 때 품질 추세 점검, 흐름 지도 맞추기, explain-back 1건 고르기 |
+| 훅 | `hooks/pre-commit` | 커밋마다 새 복잡 함수·새 중복·예상 초과 LOC 경고. explain-back 대기가 한도(기본 1건)를 넘을 때만 커밋을 막음 |
 | 훅 | `hooks/pre-push` | main으로 가는 push 차단. 브랜치 보호를 못 쓸 때의 로컬 대체 (선택) |
 
 ## 3. 설치
@@ -75,10 +75,10 @@ cp -r skills/* ~/.claude/skills/
 
 1. `templates/CLAUDE.md`와 `templates/ARCHITECTURE.md`를 프로젝트 루트에 복사합니다.
 2. CLAUDE.md의 `MODE:`를 정합니다.
-   - `learning`: 배우는 단계. 핵심 알고리즘, 에러 처리, 테스트 전략도 사람이 결정합니다.
+   - `learning`: 배우는 단계. 한쪽 문 기본 목록에 동시성 모델을 더해 사람이 결정합니다. 알고리즘 · 에러 처리 · 테스트 전략은 AI가 정하고 흐름 지도에 표시합니다.
    - `ship`: 출시 단계. 한쪽 문 기본 목록만 사람이 결정합니다.
 3. ARCHITECTURE.md의 모듈 맵과 단일 방식 규칙을 채웁니다. 처음에는 비워 두고, 첫 한쪽 문 결정 때부터 채워도 됩니다.
-4. 설계 단계마다 `templates/question-map.md`를 `docs/question-maps/`에 복사해 질문 지도를 만들고, 프로젝트에 하나 `templates/flow-map.md`를 `docs/flow-map.md`로 복사해 흐름 지도를 만듭니다. 결정이 끝나면 그 답을 설계 메모와 ADR에 옮깁니다. 학습 가이드는 프로젝트가 끝날 때 한 번 만듭니다.
+4. 프로젝트에 하나 `templates/flow-map.md`를 `docs/flow-map.md`로 복사해 흐름 지도를 먼저 만들고, 개발 범위(예: 기본 구현, 차별점)마다 `templates/question-map.md`를 `docs/question-maps/`에 복사해 질문 지도를 만듭니다. 결정이 끝나면 그 답을 설계 메모와 ADR에 옮깁니다. 학습 가이드는 만들지 않습니다.
    설계를 채팅이나 Cowork에서 하고 구현을 Claude Code에서 한다면, 설계 쪽에 `rules/ai-collab-design-briefing.md`를 직접 읽게 하세요. "설계를 다른 곳에서 할 때" 절이 두 쪽이 주고받을 것을 정합니다.
 5. 커밋 훅을 설치합니다. 프로젝트 저장소마다 한 번 합니다.
    ```bash
