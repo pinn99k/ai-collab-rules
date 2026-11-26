@@ -29,7 +29,7 @@ AI가 결정하고 AI가 기록하면, 사람은 이미 내려진 결정의 사�
 ```
 ai-collab-rules/
 ├── rules/        항상 적용되는 규칙 5개
-├── skills/       필요할 때 불러 쓰는 절차 3개
+├── skills/       필요할 때 불러 쓰는 절차 4개
 ├── templates/    프로젝트에 복사하는 CLAUDE.md, ARCHITECTURE.md, 질문 지도 틀, 흐름 지도 틀, 설계 메모 틀
 ├── hooks/        커밋 직전 품질 경보 (pre-commit, quality_check.py), main push 차단 (pre-push)
 └── docs/         설계 기록
@@ -47,6 +47,7 @@ ai-collab-rules/
 | 템플릿 | `templates/design-memo.md` | 설계 메모 틀. 기록용이며 질문 지도의 답을 옮겨 쓴다 |
 | 스킬 | `one-way-door` | 중요한 결정 앞에서 결정 카드 제시, 결정 대기, 위임 표시, ADR 기록 |
 | 스킬 | `explain-back` | 단계마다 1건, 동작을 예측하고 실행으로 확인. 코드를 줄 단위로 읽지 않는다 |
+| 스킬 | `wide-map` | 개발 범위 시작 때 바깥 지도 · 실무 질문 · 깊게 팔 1개, 끝날 때 실제 시스템 비교표. 구현은 좁게, 학습은 넓게 |
 | 스킬 | `phase-audit` | 단계가 끝날 때 품질 추세 점검, 흐름 지도 맞추기, explain-back 1건 고르기 |
 | 훅 | `hooks/pre-commit` | 커밋마다 새 복잡 함수·새 중복·예상 초과 LOC 경고. explain-back 대기가 한도(기본 1건)를 넘을 때만 커밋을 막음 |
 | 훅 | `hooks/pre-push` | main으로 가는 push 차단. 브랜치 보호를 못 쓸 때의 로컬 대체 (선택) |
@@ -69,7 +70,7 @@ cp rules/*.md ~/.claude/rules/
 cp -r skills/* ~/.claude/skills/
 ```
 
-설치 확인: Claude Code에서 `/memory` 또는 `/context`로 규칙 파일이 불러와졌는지, 스킬 목록에 세 스킬이 보이는지 확인합니다.
+설치 확인: Claude Code에서 `/memory` 또는 `/context`로 규칙 파일이 불러와졌는지, 스킬 목록에 네 스킬이 보이는지 확인합니다.
 
 ## 4. 새 프로젝트에 적용
 
